@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+<title>Holroyd — Customer Visit Feedback</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #F6F5F3;
+    min-height: 100vh;
+    color: #17171A;
+  }
+  .hw-heading { font-family: 'Oswald', 'Inter', sans-serif; text-transform: uppercase; letter-spacing: 0.02em; }
+  .hw-header { position: sticky; top: 0; z-index: 20; background: #17171A; color: #fff; padding: 14px 16px 0 16px; }
+  .hw-header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .hw-brand { display: flex; align-items: center; gap: 8px; }
+  .hw-brand-bar { width: 5px; height: 22px; background: #E40520; border-radius: 1px; }
+  .hw-brand-name { font-family: 'Oswald', sans-serif; font-size: 18px; font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase; }
+  .hw-brand-sub { font-size: 11px; color: #9CA3AF; margin-top: -2px; }
+  .hw-tabs { display: flex; gap: 4px; }
+  .hw-tab { flex: 1; text-align: center; padding: 10px 8px; font-size: 13px; font-weight: 600; color: #9CA3AF; background: transparent; border: none; cursor: pointer; border-bottom: 2px solid transparent; font-family: 'Inter', sans-serif; }
+  .hw-tab.active { color: #fff; border-bottom-color: #E40520; }
+  .hw-body { max-width: 640px; margin: 0 auto; padding: 16px 16px 120px 16px; }
+  .hw-card { background: #fff; border-radius: 12px; padding: 16px; margin-bottom: 12px; border: 1px solid #EAE8E3; box-shadow: 0 1px 2px rgba(0,0,0,0.03); }
+  .hw-section-title { font-family: 'Oswald', sans-serif; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #6B6B6E; margin-bottom: 10px; }
+  .hw-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .hw-field { margin-bottom: 10px; }
+  .hw-field label { display: block; font-size: 12px; font-weight: 600; color: #4B4B4E; margin-bottom: 4px; }
+  .hw-field input, .hw-field textarea, .hw-field select { width: 100%; padding: 10px 11px; border: 1.5px solid #E2E0DA; border-radius: 8px; font-size: 14.5px; font-family: 'Inter', sans-serif; background: #FCFBFA; color: #17171A; }
+  .hw-field input:focus, .hw-field textarea:focus { outline: none; border-color: #E40520; background: #fff; }
+  .hw-toggle-row { display: flex; gap: 8px; }
+  .hw-toggle-btn { flex: 1; padding: 9px; border-radius: 8px; border: 1.5px solid #E2E0DA; background: #FCFBFA; font-size: 13.5px; font-weight: 600; color: #6B6B6E; cursor: pointer; font-family: 'Inter', sans-serif; }
+  .hw-toggle-btn.active-yes { background: #FEE2E2; border-color: #E40520; color: #991B1B; }
+  .hw-toggle-btn.active-no { background: #F1F5F9; border-color: #94A3B8; color: #334155; }
+  .hw-qnum { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: #17171A; color: #fff; font-size: 11.5px; font-weight: 700; margin-right: 8px; flex-shrink: 0; }
+  .hw-qtitle { font-size: 15px; font-weight: 700; color: #17171A; display: flex; align-items: center; }
+  .hw-qtext { font-size: 13.5px; color: #4B4B4E; margin: 4px 0 2px 30px; line-height: 1.4; }
+  .hw-qprobe { font-size: 11.5px; color: #9CA3AF; margin: 0 0 12px 30px; font-style: italic; }
+  .hw-rating-row { display: flex; gap: 6px; margin: 10px 0 10px 30px; }
+  .hw-rating-btn { flex: 1; padding: 9px 2px; border-radius: 8px; border: 1.5px solid #E2E0DA; background: #fff; font-size: 13px; font-weight: 700; cursor: pointer; color: #9CA3AF; }
+  .hw-rating-label { margin-left: 30px; font-size: 12px; font-weight: 600; margin-bottom: 10px; }
+  .hw-priority-row { display: flex; gap: 6px; margin-left: 30px; }
+  .hw-priority-btn { padding: 6px 12px; border-radius: 20px; border: 1.5px solid #E2E0DA; background: #fff; font-size: 12px; font-weight: 600; cursor: pointer; color: #6B6B6E; }
+  .hw-notes-wrap { margin: 10px 0 4px 30px; }
+  .hw-sticky-save { position: fixed; bottom: 0; left: 0; right: 0; z-index: 30; background: #fff; border-top: 1px solid #EAE8E3; padding: 12px 16px; display: flex; justify-content: center; }
+  .hw-save-btn { background: #E40520; color: #fff; border: none; border-radius: 10px; padding: 13px 28px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; max-width: 640px; width: 100%; }
+  .hw-save-btn:disabled { background: #D1D5DB; cursor: not-allowed; }
+  .hw-save-msg { font-size: 12.5px; font-weight: 600; text-align: center; margin-top: 6px; }
+  .hw-stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
+  .hw-stat-card { background: #fff; border-radius: 12px; padding: 14px 10px; text-align: center; border: 1px solid #EAE8E3; }
+  .hw-stat-num { font-family: 'Oswald', sans-serif; font-size: 26px; font-weight: 600; }
+  .hw-stat-label { font-size: 10.5px; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; margin-top: 2px; }
+  .hw-bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .hw-bar-label { font-size: 12px; color: #4B4B4E; width: 150px; flex-shrink: 0; }
+  .hw-bar-track { flex: 1; background: #F1F0EC; border-radius: 5px; height: 10px; overflow: hidden; }
+  .hw-bar-fill { height: 100%; border-radius: 5px; }
+  .hw-bar-val { font-size: 12px; font-weight: 700; width: 28px; text-align: right; flex-shrink: 0; }
+  .hw-visit-card { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+  .hw-visit-badge { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: #fff; flex-shrink: 0; }
+  .hw-visit-info { flex: 1; min-width: 0; }
+  .hw-visit-customer { font-weight: 700; font-size: 14.5px; }
+  .hw-visit-meta { font-size: 12px; color: #9CA3AF; margin-top: 2px; display: flex; gap: 10px; flex-wrap: wrap; }
+  .hw-fu-badge { font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 10px; background: #FEE2E2; color: #991B1B; flex-shrink: 0; }
+  .hw-empty { text-align: center; padding: 40px 20px; color: #9CA3AF; }
+  .hw-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .hw-toolbar h2 { font-family: 'Oswald', sans-serif; font-size: 15px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; margin: 0; }
+  .hw-export-btn { background: #17171A; color: #fff; border: none; padding: 8px 13px; border-radius: 8px; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+  .hw-overlay { position: fixed; inset: 0; background: rgba(23,23,26,0.55); z-index: 40; display: flex; align-items: flex-end; justify-content: center; }
+  .hw-modal { background: #F6F5F3; width: 100%; max-width: 640px; max-height: 88vh; overflow-y: auto; border-radius: 16px 16px 0 0; padding: 16px; }
+  .hw-modal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+  .hw-modal-close { background: #EAE8E3; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 16px; line-height: 1; }
+  .hw-detail-q { margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px solid #EAE8E3; }
+  .hw-detail-q:last-child { border-bottom: none; }
+  .hw-detail-qtop { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+  .hw-detail-qtitle { font-weight: 700; font-size: 14px; }
+  .hw-rating-chip { font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 12px; color: #fff; flex-shrink: 0; }
+  .hw-detail-notes { font-size: 13.5px; color: #4B4B4E; margin-top: 4px; line-height: 1.4; }
+  .hw-delete-btn { color: #991B1B; background: #FEE2E2; border: none; padding: 8px 12px; border-radius: 8px; font-size: 12.5px; font-weight: 600; cursor: pointer; margin-top: 16px; }
+  .hw-confirm-row { display: flex; gap: 8px; margin-top: 8px; }
+  .hw-confirm-row button { flex: 1; padding: 9px; border-radius: 8px; border: none; font-weight: 600; font-size: 13px; cursor: pointer; }
+  .hw-loading { text-align: center; padding: 50px 20px; color: #9CA3AF; }
+  .hw-spinner { width: 22px; height: 22px; border: 3px solid #E2E0DA; border-top-color: #E40520; border-radius: 50%; margin: 0 auto 10px auto; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .hw-setup { max-width: 560px; margin: 60px auto; padding: 24px; background: #fff; border-radius: 12px; border: 1px solid #EAE8E3; }
+  .hw-setup code { background: #F1F0EC; padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+  @media (max-width: 420px) { .hw-grid2 { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useMemo } = React;
+
+// ── SUPABASE CONFIG ──────────────────────────────────────────────
+// Replace these two values after you create your Supabase project.
+// Project Settings → API → Project URL / anon public key.
+const SUPABASE_URL = "https://fibiyvxvxsktxsjyzdmh.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZpYml5dnh2eHNrdHhzanl6ZG1oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxMTgwNTEsImV4cCI6MjA5OTY5NDA1MX0.d1ol7FlU54RiS3xaKKOcDsi2EVN5mMUASMJYql8voBY";
+// ─────────────────────────────────────────────────────────────────
+
+const isConfigured = SUPABASE_URL !== "YOUR_SUPABASE_URL" && SUPABASE_ANON_KEY !== "YOUR_SUPABASE_ANON_KEY";
+const db = isConfigured ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+const QUESTIONS = [
+  { id: 1, topic: "Product Quality", question: "How satisfied are you with the quality of the products you receive from us?", probe: "Consistency, defects, fit-for-purpose" },
+  { id: 2, topic: "Service Quality", question: "How well do we support you when issues or questions come up?", probe: "Responsiveness, technical support, communication" },
+  { id: 3, topic: "Delivery Performance", question: "How reliable is our delivery in terms of timing and accuracy?", probe: "Late deliveries, partial deliveries, communication on delays" },
+  { id: 4, topic: "Cost & Value", question: "Do you feel the pricing reflects the value you get from Holroyd?", probe: "Competitiveness, cost vs quality, cost of poor quality" },
+  { id: 5, topic: "Ease of Doing Business", question: "How easy is it to work with us day-to-day?", probe: "Ordering process, communication, documentation, flexibility" },
+  { id: 6, topic: "Product Performance in Your Process", question: "How well do our products perform in your manufacturing or operational process?", probe: "Reliability, scrap, rework, downtime impact" },
+  { id: 7, topic: "Biggest Frustration", question: "What's the most frustrating thing you experience when dealing with us?", probe: "Recurring issues, bottlenecks, communication gaps" },
+  { id: 8, topic: "Biggest Positive", question: "What do we do really well that you value most?", probe: "Strengths to protect" },
+  { id: 9, topic: "Improvement Priority", question: "If we could fix one thing for you in the next 30 days, what should it be?", probe: "Actionable, specific" },
+  { id: 10, topic: "Future Needs", question: "Are there any upcoming changes in your business where Holroyd could support you more?", probe: "New products, volume changes, technical support, sustainability" },
+];
+
+const RATING_META = {
+  1: { label: "Poor", color: "#2563EB" },
+  2: { label: "Fair", color: "#0EA5E9" },
+  3: { label: "Good", color: "#F59E0B" },
+  4: { label: "Very Good", color: "#F97316" },
+  5: { label: "Excellent", color: "#E40520" },
+};
+const PRIORITY_META = {
+  Low: { color: "#166534", bg: "#DCFCE7" },
+  Medium: { color: "#92400E", bg: "#FEF3C7" },
+  High: { color: "#991B1B", bg: "#FEE2E2" },
+};
+const STATUS_OPTIONS = ["Open", "In Progress", "Done"];
+
+function emptyForm() {
+  return {
+    customer: "", contact: "", date: new Date().toISOString().slice(0, 10),
+    accountManager: "", site: "", followUpRequired: "",
+    answers: Object.fromEntries(QUESTIONS.map((q) => [q.id, { rating: 0, notes: "", priority: "" }])),
+    topAction: "", owner: "", dueDate: "", quote: "", internalNextStep: "",
+    status: "Open", overallNotes: "",
+  };
+}
+
+function avgRating(visit) {
+  const ratings = QUESTIONS.map((q) => visit.answers?.[q.id]?.rating || 0).filter((r) => r > 0);
+  if (!ratings.length) return 0;
+  return ratings.reduce((a, b) => a + b, 0) / ratings.length;
+}
+function heatColorForAvg(avg) {
+  if (!avg) return "#CBD5E1";
+  return RATING_META[Math.max(1, Math.min(5, Math.round(avg)))].color;
+}
+function csvEscape(val) {
+  const s = String(val ?? "");
+  if (s.includes(",") || s.includes('"') || s.includes("\n")) return '"' + s.replace(/"/g, '""') + '"';
+  return s;
+}
+function buildCsv(visits) {
+  const headers = ["Date", "Customer", "Contact", "Account Manager", "Site / Location", "Follow-up Required",
+    ...QUESTIONS.flatMap((q) => [`${q.topic} - Rating`, `${q.topic} - Notes`, `${q.topic} - Priority`]),
+    "Top Action Agreed", "Owner", "Due Date", "Customer Quote", "Internal Next Step", "Status", "Overall Notes"];
+  const rows = visits.map((v) => [v.date, v.customer, v.contact, v.accountManager, v.site, v.followUpRequired,
+    ...QUESTIONS.flatMap((q) => { const a = v.answers?.[q.id] || {}; return [a.rating || "", a.notes || "", a.priority || ""]; }),
+    v.topAction, v.owner, v.dueDate, v.quote, v.internalNextStep, v.status, v.overallNotes]);
+  return [headers, ...rows].map((r) => r.map(csvEscape).join(",")).join("\n");
+}
+function downloadCsv(visits) {
+  const blob = new Blob([buildCsv(visits)], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = `holroyd-visit-feedback-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+
+async function loadVisits() {
+  const { data, error } = await db.from("visits").select("id, created_at, payload").order("created_at", { ascending: false });
+  if (error) throw error;
+  return data.map((row) => ({ ...row.payload, id: row.id, createdAt: row.created_at }));
+}
+async function saveVisitToDb(record) {
+  const { error } = await db.from("visits").insert({ payload: record });
+  if (error) throw error;
+}
+async function deleteVisitFromDb(id) {
+  const { error } = await db.from("visits").delete().eq("id", id);
+  if (error) throw error;
+}
+
+function SetupNotice() {
+  return (
+    <div className="hw-setup">
+      <div className="hw-brand" style={{ marginBottom: 16 }}>
+        <div className="hw-brand-bar" style={{ background: "#E40520" }}></div>
+        <div>
+          <div className="hw-brand-name" style={{ color: "#17171A" }}>Holroyd</div>
+          <div className="hw-brand-sub">Customer visit feedback</div>
+        </div>
+      </div>
+      <p style={{ fontSize: 14, lineHeight: 1.6 }}>This page needs a database connection before it can save anything. Open <code>index.html</code>, find <code>SUPABASE_URL</code> and <code>SUPABASE_ANON_KEY</code> near the top of the script, and paste in your Supabase project's values (Project Settings → API).</p>
+    </div>
+  );
+}
+
+function App() {
+  const [tab, setTab] = useState("new");
+  const [form, setForm] = useState(emptyForm());
+  const [visits, setVisits] = useState([]);
+  const [loadingVisits, setLoadingVisits] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveMsg, setSaveMsg] = useState("");
+  const [detailVisit, setDetailVisit] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState(null);
+
+  useEffect(() => { refreshVisits(); }, []);
+
+  async function refreshVisits() {
+    setLoadingVisits(true); setLoadError(false);
+    try { setVisits(await loadVisits()); } catch (e) { setLoadError(true); } finally { setLoadingVisits(false); }
+  }
+
+  function updateAnswer(qid, field, value) {
+    setForm((f) => ({ ...f, answers: { ...f.answers, [qid]: { ...f.answers[qid], [field]: value } } }));
+  }
+
+  const canSave = form.customer.trim().length > 0 && form.date.length > 0;
+
+  async function handleSave() {
+    if (!canSave || saving) return;
+    setSaving(true); setSaveMsg("");
+    try {
+      await saveVisitToDb(form);
+      await refreshVisits();
+      setForm(emptyForm());
+      setSaveMsg("Visit saved");
+      setTimeout(() => setSaveMsg(""), 3000);
+    } catch (e) {
+      setSaveMsg("Couldn't save — check connection and try again");
+    } finally { setSaving(false); }
+  }
+
+  async function handleDelete(id) {
+    try { await deleteVisitFromDb(id); await refreshVisits(); setConfirmDelete(null); setDetailVisit(null); }
+    catch (e) { setConfirmDelete(null); }
+  }
+
+  const stats = useMemo(() => {
+    if (!visits.length) return null;
+    const overallAvgs = visits.map(avgRating).filter((a) => a > 0);
+    const overall = overallAvgs.length ? overallAvgs.reduce((a, b) => a + b, 0) / overallAvgs.length : 0;
+    const followUps = visits.filter((v) => v.followUpRequired === "Yes").length;
+    const perQuestion = QUESTIONS.map((q) => {
+      const ratings = visits.map((v) => v.answers?.[q.id]?.rating || 0).filter((r) => r > 0);
+      const avg = ratings.length ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0;
+      return { ...q, avg };
+    });
+    return { overall, followUps, perQuestion, total: visits.length };
+  }, [visits]);
+
+  return (
+    <div>
+      <div className="hw-header">
+        <div className="hw-header-top">
+          <div className="hw-brand">
+            <div className="hw-brand-bar"></div>
+            <div>
+              <div className="hw-brand-name">Holroyd</div>
+              <div className="hw-brand-sub">Customer visit feedback</div>
+            </div>
+          </div>
+        </div>
+        <div className="hw-tabs">
+          <button className={`hw-tab ${tab === "new" ? "active" : ""}`} onClick={() => setTab("new")}>New visit</button>
+          <button className={`hw-tab ${tab === "review" ? "active" : ""}`} onClick={() => { setTab("review"); refreshVisits(); }}>Review</button>
+        </div>
+      </div>
+
+      <div className="hw-body">
+        {tab === "new" && (
+          <React.Fragment>
+            <div className="hw-card">
+              <div className="hw-section-title">Visit details</div>
+              <div className="hw-grid2">
+                <div className="hw-field"><label>Customer *</label><input value={form.customer} onChange={(e) => setForm({ ...form, customer: e.target.value })} placeholder="Company name" /></div>
+                <div className="hw-field"><label>Contact</label><input value={form.contact} onChange={(e) => setForm({ ...form, contact: e.target.value })} placeholder="Contact name" /></div>
+                <div className="hw-field"><label>Date *</label><input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} /></div>
+                <div className="hw-field"><label>Account manager</label><input value={form.accountManager} onChange={(e) => setForm({ ...form, accountManager: e.target.value })} placeholder="Your name" /></div>
+                <div className="hw-field"><label>Site / location</label><input value={form.site} onChange={(e) => setForm({ ...form, site: e.target.value })} placeholder="Site or location" /></div>
+                <div className="hw-field">
+                  <label>Follow-up required?</label>
+                  <div className="hw-toggle-row">
+                    <button className={`hw-toggle-btn ${form.followUpRequired === "Yes" ? "active-yes" : ""}`} onClick={() => setForm({ ...form, followUpRequired: "Yes" })}>Yes</button>
+                    <button className={`hw-toggle-btn ${form.followUpRequired === "No" ? "active-no" : ""}`} onClick={() => setForm({ ...form, followUpRequired: "No" })}>No</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {QUESTIONS.map((q, i) => {
+              const a = form.answers[q.id];
+              return (
+                <div className="hw-card" key={q.id}>
+                  <div className="hw-qtitle"><span className="hw-qnum">{i + 1}</span>{q.topic}</div>
+                  <div className="hw-qtext">{q.question}</div>
+                  <div className="hw-qprobe">{q.probe}</div>
+                  <div className="hw-rating-row">
+                    {[1, 2, 3, 4, 5].map((r) => (
+                      <button key={r} className="hw-rating-btn"
+                        style={a.rating === r ? { background: RATING_META[r].color, borderColor: RATING_META[r].color, color: "#fff" } : {}}
+                        onClick={() => updateAnswer(q.id, "rating", a.rating === r ? 0 : r)}>{r}</button>
+                    ))}
+                  </div>
+                  {a.rating > 0 && <div className="hw-rating-label" style={{ color: RATING_META[a.rating].color }}>{RATING_META[a.rating].label}</div>}
+                  <div className="hw-notes-wrap"><textarea rows="2" placeholder="Customer response / evidence" value={a.notes} onChange={(e) => updateAnswer(q.id, "notes", e.target.value)}></textarea></div>
+                  <div className="hw-priority-row">
+                    {["Low", "Medium", "High"].map((p) => (
+                      <button key={p} className="hw-priority-btn"
+                        style={a.priority === p ? { background: PRIORITY_META[p].bg, borderColor: PRIORITY_META[p].color, color: PRIORITY_META[p].color } : {}}
+                        onClick={() => updateAnswer(q.id, "priority", a.priority === p ? "" : p)}>{p}</button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+
+            <div className="hw-card">
+              <div className="hw-section-title">Follow-up summary</div>
+              <div className="hw-field"><label>Top action agreed</label><input value={form.topAction} onChange={(e) => setForm({ ...form, topAction: e.target.value })} /></div>
+              <div className="hw-grid2">
+                <div className="hw-field"><label>Owner</label><input value={form.owner} onChange={(e) => setForm({ ...form, owner: e.target.value })} /></div>
+                <div className="hw-field"><label>Due date</label><input type="date" value={form.dueDate} onChange={(e) => setForm({ ...form, dueDate: e.target.value })} /></div>
+              </div>
+              <div className="hw-field"><label>Customer quote / verbatim comment</label><textarea rows="2" value={form.quote} onChange={(e) => setForm({ ...form, quote: e.target.value })}></textarea></div>
+              <div className="hw-field"><label>Internal next step</label><input value={form.internalNextStep} onChange={(e) => setForm({ ...form, internalNextStep: e.target.value })} /></div>
+              <div className="hw-field">
+                <label>Status</label>
+                <div className="hw-toggle-row">
+                  {STATUS_OPTIONS.map((s) => (
+                    <button key={s} className="hw-toggle-btn" style={form.status === s ? { background: "#17171A", borderColor: "#17171A", color: "#fff" } : {}} onClick={() => setForm({ ...form, status: s })}>{s}</button>
+                  ))}
+                </div>
+              </div>
+              <div className="hw-field"><label>Overall conversation notes</label><textarea rows="3" value={form.overallNotes} onChange={(e) => setForm({ ...form, overallNotes: e.target.value })}></textarea></div>
+            </div>
+          </React.Fragment>
+        )}
+
+        {tab === "review" && (
+          <React.Fragment>
+            {loadingVisits && <div className="hw-loading"><div className="hw-spinner"></div>Loading visits…</div>}
+            {!loadingVisits && loadError && (
+              <div className="hw-empty">Couldn't load visits. Check your connection.
+                <div><button className="hw-export-btn" style={{ marginTop: 12 }} onClick={refreshVisits}>Try again</button></div>
+              </div>
+            )}
+            {!loadingVisits && !loadError && visits.length === 0 && <div className="hw-empty">No visits logged yet. Start with "New visit".</div>}
+            {!loadingVisits && !loadError && visits.length > 0 && stats && (
+              <React.Fragment>
+                <div className="hw-stat-grid">
+                  <div className="hw-stat-card"><div className="hw-stat-num">{stats.total}</div><div className="hw-stat-label">Visits logged</div></div>
+                  <div className="hw-stat-card"><div className="hw-stat-num" style={{ color: heatColorForAvg(stats.overall) }}>{stats.overall ? stats.overall.toFixed(1) : "–"}</div><div className="hw-stat-label">Avg rating</div></div>
+                  <div className="hw-stat-card"><div className="hw-stat-num" style={{ color: stats.followUps ? "#E40520" : "#17171A" }}>{stats.followUps}</div><div className="hw-stat-label">Need follow-up</div></div>
+                </div>
+                <div className="hw-card">
+                  <div className="hw-section-title">Average rating by question</div>
+                  {stats.perQuestion.map((q) => (
+                    <div className="hw-bar-row" key={q.id}>
+                      <div className="hw-bar-label">{q.topic}</div>
+                      <div className="hw-bar-track"><div className="hw-bar-fill" style={{ width: `${(q.avg / 5) * 100}%`, background: heatColorForAvg(q.avg) }}></div></div>
+                      <div className="hw-bar-val">{q.avg ? q.avg.toFixed(1) : "–"}</div>
+                    </div>
+                  ))}
+                </div>
+                <div className="hw-toolbar"><h2>All visits</h2><button className="hw-export-btn" onClick={() => downloadCsv(visits)}>Export CSV</button></div>
+                {visits.map((v) => {
+                  const avg = avgRating(v);
+                  return (
+                    <div className="hw-card hw-visit-card" key={v.id} onClick={() => setDetailVisit(v)}>
+                      <div className="hw-visit-badge" style={{ background: heatColorForAvg(avg) }}>{avg ? avg.toFixed(1) : "–"}</div>
+                      <div className="hw-visit-info">
+                        <div className="hw-visit-customer">{v.customer || "Unnamed customer"}</div>
+                        <div className="hw-visit-meta">
+                          <span>{v.date}</span>
+                          {v.accountManager && <span>{v.accountManager}</span>}
+                          {v.site && <span>{v.site}</span>}
+                        </div>
+                      </div>
+                      {v.followUpRequired === "Yes" && <div className="hw-fu-badge">Follow-up</div>}
+                    </div>
+                  );
+                })}
+              </React.Fragment>
+            )}
+          </React.Fragment>
+        )}
+      </div>
+
+      {tab === "new" && (
+        <div className="hw-sticky-save">
+          <div style={{ maxWidth: 640, width: "100%" }}>
+            <button className="hw-save-btn" disabled={!canSave || saving} onClick={handleSave}>{saving ? "Saving…" : "Save visit"}</button>
+            {saveMsg && <div className="hw-save-msg" style={{ color: saveMsg.includes("Couldn't") ? "#991B1B" : "#166534" }}>{saveMsg}</div>}
+            {!canSave && !saveMsg && <div style={{ fontSize: 11.5, color: "#9CA3AF", textAlign: "center", marginTop: 6 }}>Add a customer name and date to save</div>}
+          </div>
+        </div>
+      )}
+
+      {detailVisit && (
+        <div className="hw-overlay" onClick={() => { setDetailVisit(null); setConfirmDelete(null); }}>
+          <div className="hw-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="hw-modal-header">
+              <div>
+                <div className="hw-brand-name" style={{ color: "#17171A" }}>{detailVisit.customer}</div>
+                <div className="hw-visit-meta" style={{ marginTop: 6 }}>
+                  <span>{detailVisit.date}</span>
+                  {detailVisit.contact && <span>Contact: {detailVisit.contact}</span>}
+                  {detailVisit.accountManager && <span>AM: {detailVisit.accountManager}</span>}
+                  {detailVisit.site && <span>{detailVisit.site}</span>}
+                </div>
+              </div>
+              <button className="hw-modal-close" onClick={() => { setDetailVisit(null); setConfirmDelete(null); }}>×</button>
+            </div>
+
+            <div className="hw-card">
+              {QUESTIONS.map((q, i) => {
+                const a = detailVisit.answers?.[q.id] || {};
+                return (
+                  <div className="hw-detail-q" key={q.id}>
+                    <div className="hw-detail-qtop">
+                      <div className="hw-detail-qtitle">{i + 1}. {q.topic}</div>
+                      {a.rating > 0 && <div className="hw-rating-chip" style={{ background: RATING_META[a.rating].color }}>{a.rating} · {RATING_META[a.rating].label}</div>}
+                    </div>
+                    {a.notes && <div className="hw-detail-notes">{a.notes}</div>}
+                    {a.priority && <div style={{ marginTop: 6 }}><span className="hw-priority-btn" style={{ background: PRIORITY_META[a.priority].bg, borderColor: PRIORITY_META[a.priority].color, color: PRIORITY_META[a.priority].color, cursor: "default" }}>{a.priority} priority</span></div>}
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="hw-card">
+              <div className="hw-section-title">Follow-up summary</div>
+              {detailVisit.topAction && <div className="hw-field"><label>Top action agreed</label><div className="hw-detail-notes">{detailVisit.topAction}</div></div>}
+              {(detailVisit.owner || detailVisit.dueDate) && <div className="hw-field"><label>Owner / due date</label><div className="hw-detail-notes">{detailVisit.owner} {detailVisit.dueDate ? `— due ${detailVisit.dueDate}` : ""}</div></div>}
+              {detailVisit.quote && <div className="hw-field"><label>Customer quote</label><div className="hw-detail-notes">"{detailVisit.quote}"</div></div>}
+              {detailVisit.internalNextStep && <div className="hw-field"><label>Internal next step</label><div className="hw-detail-notes">{detailVisit.internalNextStep}</div></div>}
+              <div className="hw-field"><label>Status</label><div className="hw-detail-notes">{detailVisit.status}</div></div>
+              {detailVisit.overallNotes && <div className="hw-field"><label>Overall notes</label><div className="hw-detail-notes">{detailVisit.overallNotes}</div></div>}
+              {confirmDelete === detailVisit.id ? (
+                <div className="hw-confirm-row">
+                  <button style={{ background: "#FEE2E2", color: "#991B1B" }} onClick={() => handleDelete(detailVisit.id)}>Confirm delete</button>
+                  <button style={{ background: "#F1F0EC", color: "#4B4B4E" }} onClick={() => setConfirmDelete(null)}>Cancel</button>
+                </div>
+              ) : (
+                <button className="hw-delete-btn" onClick={() => setConfirmDelete(detailVisit.id)}>Delete this visit</button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(isConfigured ? <App /> : <SetupNotice />);
+</script>
+</body>
+</html>
