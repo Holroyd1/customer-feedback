@@ -13,13 +13,7 @@
 <style>
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
-  body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: #F6F5F3;
-    min-height: 100vh;
-    color: #17171A;
-  }
-  .hw-heading { font-family: 'Oswald', 'Inter', sans-serif; text-transform: uppercase; letter-spacing: 0.02em; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #F6F5F3; min-height: 100vh; color: #17171A; }
   .hw-header { position: sticky; top: 0; z-index: 20; background: #17171A; color: #fff; padding: 14px 16px 0 16px; }
   .hw-header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
   .hw-brand { display: flex; align-items: center; gap: 8px; }
@@ -48,17 +42,20 @@
   .hw-rating-row { display: flex; gap: 6px; margin: 10px 0 10px 30px; }
   .hw-rating-btn { flex: 1; padding: 9px 2px; border-radius: 8px; border: 1.5px solid #E2E0DA; background: #fff; font-size: 13px; font-weight: 700; cursor: pointer; color: #9CA3AF; }
   .hw-rating-label { margin-left: 30px; font-size: 12px; font-weight: 600; margin-bottom: 10px; }
-  .hw-priority-row { display: flex; gap: 6px; margin-left: 30px; }
+  .hw-nps-row { display: flex; gap: 3px; margin: 10px 0 4px 30px; flex-wrap: nowrap; }
+  .hw-nps-btn { flex: 1; padding: 8px 0; border-radius: 6px; border: 1.5px solid #E2E0DA; background: #fff; font-size: 11.5px; font-weight: 700; cursor: pointer; color: #9CA3AF; min-width: 0; }
+  .hw-nps-scale-labels { display: flex; justify-content: space-between; margin: 0 0 10px 30px; font-size: 10.5px; color: #9CA3AF; }
+  .hw-priority-row { display: flex; gap: 6px; margin-left: 30px; flex-wrap: wrap; }
   .hw-priority-btn { padding: 6px 12px; border-radius: 20px; border: 1.5px solid #E2E0DA; background: #fff; font-size: 12px; font-weight: 600; cursor: pointer; color: #6B6B6E; }
   .hw-notes-wrap { margin: 10px 0 4px 30px; }
   .hw-sticky-save { position: fixed; bottom: 0; left: 0; right: 0; z-index: 30; background: #fff; border-top: 1px solid #EAE8E3; padding: 12px 16px; display: flex; justify-content: center; }
   .hw-save-btn { background: #E40520; color: #fff; border: none; border-radius: 10px; padding: 13px 28px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; max-width: 640px; width: 100%; }
   .hw-save-btn:disabled { background: #D1D5DB; cursor: not-allowed; }
   .hw-save-msg { font-size: 12.5px; font-weight: 600; text-align: center; margin-top: 6px; }
-  .hw-stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
-  .hw-stat-card { background: #fff; border-radius: 12px; padding: 14px 10px; text-align: center; border: 1px solid #EAE8E3; }
-  .hw-stat-num { font-family: 'Oswald', sans-serif; font-size: 26px; font-weight: 600; }
-  .hw-stat-label { font-size: 10.5px; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; margin-top: 2px; }
+  .hw-stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 14px; }
+  .hw-stat-card { background: #fff; border-radius: 12px; padding: 12px 6px; text-align: center; border: 1px solid #EAE8E3; }
+  .hw-stat-num { font-family: 'Oswald', sans-serif; font-size: 22px; font-weight: 600; }
+  .hw-stat-label { font-size: 9.5px; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.03em; font-weight: 600; margin-top: 2px; }
   .hw-bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
   .hw-bar-label { font-size: 12px; color: #4B4B4E; width: 150px; flex-shrink: 0; }
   .hw-bar-track { flex: 1; background: #F1F0EC; border-radius: 5px; height: 10px; overflow: hidden; }
@@ -92,7 +89,9 @@
   @keyframes spin { to { transform: rotate(360deg); } }
   .hw-setup { max-width: 560px; margin: 60px auto; padding: 24px; background: #fff; border-radius: 12px; border: 1px solid #EAE8E3; }
   .hw-setup code { background: #F1F0EC; padding: 2px 6px; border-radius: 4px; font-size: 13px; }
-  @media (max-width: 420px) { .hw-grid2 { grid-template-columns: 1fr; } }
+  .hw-theme-block { margin-bottom: 18px; }
+  .hw-theme-block:last-child { margin-bottom: 0; }
+  @media (max-width: 420px) { .hw-grid2 { grid-template-columns: 1fr; } .hw-stat-grid { grid-template-columns: repeat(2, 1fr); } }
 </style>
 </head>
 <body>
@@ -102,54 +101,70 @@
 const { useState, useEffect, useMemo } = React;
 
 // ── SUPABASE CONFIG ──────────────────────────────────────────────
-// Replace these two values after you create your Supabase project.
-// Project Settings → API → Project URL / anon public key.
 const SUPABASE_URL = "https://fibiyvxvxsktxsjyzdmh.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZpYml5dnh2eHNrdHhzanl6ZG1oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxMTgwNTEsImV4cCI6MjA5OTY5NDA1MX0.d1ol7FlU54RiS3xaKKOcDsi2EVN5mMUASMJYql8voBY";
+// ─────────────────────────────────────────────────────────────────
+
+// ── PASSCODE ─────────────────────────────────────────────────────
+// Change this to whatever you want your team to use. This is a basic
+// deterrent, not real security — anyone who views the page source can
+// see it. Fine for keeping an internal tool off casual stumbling, not
+// for anything sensitive.
+const APP_PASSCODE = "Holroyd24!";
 // ─────────────────────────────────────────────────────────────────
 
 const isConfigured = SUPABASE_URL !== "YOUR_SUPABASE_URL" && SUPABASE_ANON_KEY !== "YOUR_SUPABASE_ANON_KEY";
 const db = isConfigured ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
+const FIX_CATEGORIES = ["Pricing", "Lead Time / Delivery", "Product Quality", "Technical Support", "Communication", "Documentation / Paperwork", "Packaging", "Account Management", "Other"];
+const FUTURE_CATEGORIES = ["New Product Interest", "Volume / Capacity Change", "Technical Support", "Sustainability", "New Site / Region", "Other"];
+
 const QUESTIONS = [
-  { id: 1, topic: "Product Quality", question: "How satisfied are you with the quality of the products you receive from us?", probe: "Consistency, defects, fit-for-purpose" },
-  { id: 2, topic: "Service Quality", question: "How well do we support you when issues or questions come up?", probe: "Responsiveness, technical support, communication" },
-  { id: 3, topic: "Delivery Performance", question: "How reliable is our delivery in terms of timing and accuracy?", probe: "Late deliveries, partial deliveries, communication on delays" },
-  { id: 4, topic: "Cost & Value", question: "Do you feel the pricing reflects the value you get from Holroyd?", probe: "Competitiveness, cost vs quality, cost of poor quality" },
-  { id: 5, topic: "Ease of Doing Business", question: "How easy is it to work with us day-to-day?", probe: "Ordering process, communication, documentation, flexibility" },
-  { id: 6, topic: "Product Performance in Your Process", question: "How well do our products perform in your manufacturing or operational process?", probe: "Reliability, scrap, rework, downtime impact" },
-  { id: 7, topic: "Biggest Frustration", question: "What's the most frustrating thing you experience when dealing with us?", probe: "Recurring issues, bottlenecks, communication gaps" },
-  { id: 8, topic: "Biggest Positive", question: "What do we do really well that you value most?", probe: "Strengths to protect" },
-  { id: 9, topic: "Improvement Priority", question: "If we could fix one thing for you in the next 30 days, what should it be?", probe: "Actionable, specific" },
-  { id: 10, topic: "Future Needs", question: "Are there any upcoming changes in your business where Holroyd could support you more?", probe: "New products, volume changes, technical support, sustainability" },
+  { id: 1, type: "rating", topic: "Product Quality", question: "How satisfied are you with the quality of the products you receive from us?", probe: "Consistency, defects, fit-for-purpose" },
+  { id: 2, type: "rating", topic: "Service Quality", question: "How well do we support you when issues or questions come up?", probe: "Responsiveness, technical support, communication" },
+  { id: 3, type: "rating", topic: "Delivery Performance", question: "How reliable is our delivery in terms of timing and accuracy?", probe: "Late deliveries, partial deliveries, communication on delays" },
+  { id: 4, type: "rating", topic: "Cost & Value", question: "Do you feel the pricing reflects the value you get from Holroyd?", probe: "Competitiveness, cost vs quality, cost of poor quality" },
+  { id: 5, type: "rating", topic: "Ease of Doing Business", question: "How easy is it to work with us day-to-day?", probe: "Ordering process, communication, documentation, flexibility" },
+  { id: 6, type: "nps", topic: "Likelihood to Recommend", question: "How likely are you to recommend Holroyd to a colleague or another business?", probe: "0 = not at all likely, 10 = extremely likely" },
+  { id: 7, type: "tagged", topic: "What Should We Fix", question: "What's the one thing we should fix for you?", probe: "The thing that's been bugging you, even if it's minor", categories: FIX_CATEGORIES },
+  { id: 8, type: "tagged", topic: "Biggest Positive", question: "What do we do really well that you value most?", probe: "Strengths to protect", categories: FIX_CATEGORIES },
+  { id: 9, type: "tagged", topic: "Future Needs", question: "Are there any upcoming changes in your business where Holroyd could support you more?", probe: "New products, volume changes, technical support, sustainability", categories: FUTURE_CATEGORIES },
 ];
+const RATING_QUESTIONS = QUESTIONS.filter((q) => q.type === "rating");
 
 const RATING_META = {
-  1: { label: "Poor", color: "#2563EB" },
-  2: { label: "Fair", color: "#0EA5E9" },
-  3: { label: "Good", color: "#F59E0B" },
-  4: { label: "Very Good", color: "#F97316" },
-  5: { label: "Excellent", color: "#E40520" },
+  1: { label: "Poor", color: "#2563EB" }, 2: { label: "Fair", color: "#0EA5E9" }, 3: { label: "Good", color: "#F59E0B" },
+  4: { label: "Very Good", color: "#F97316" }, 5: { label: "Excellent", color: "#E40520" },
 };
 const PRIORITY_META = {
-  Low: { color: "#166534", bg: "#DCFCE7" },
-  Medium: { color: "#92400E", bg: "#FEF3C7" },
-  High: { color: "#991B1B", bg: "#FEE2E2" },
+  Low: { color: "#166534", bg: "#DCFCE7" }, Medium: { color: "#92400E", bg: "#FEF3C7" }, High: { color: "#991B1B", bg: "#FEE2E2" },
 };
 const STATUS_OPTIONS = ["Open", "In Progress", "Done"];
 
+function npsColor(score) {
+  if (score == null) return "#CBD5E1";
+  if (score >= 9) return "#E40520";
+  if (score >= 7) return "#F59E0B";
+  return "#2563EB";
+}
+
 function emptyForm() {
+  const answers = {};
+  QUESTIONS.forEach((q) => {
+    if (q.type === "rating") answers[q.id] = { rating: 0, notes: "", priority: "" };
+    else if (q.type === "nps") answers[q.id] = { score: null, notes: "" };
+    else answers[q.id] = { category: "", notes: "" };
+  });
   return {
     customer: "", contact: "", date: new Date().toISOString().slice(0, 10),
-    accountManager: "", site: "", followUpRequired: "",
-    answers: Object.fromEntries(QUESTIONS.map((q) => [q.id, { rating: 0, notes: "", priority: "" }])),
+    accountManager: "", site: "", followUpRequired: "", answers,
     topAction: "", owner: "", dueDate: "", quote: "", internalNextStep: "",
     status: "Open", overallNotes: "",
   };
 }
 
 function avgRating(visit) {
-  const ratings = QUESTIONS.map((q) => visit.answers?.[q.id]?.rating || 0).filter((r) => r > 0);
+  const ratings = RATING_QUESTIONS.map((q) => visit.answers?.[q.id]?.rating || 0).filter((r) => r > 0);
   if (!ratings.length) return 0;
   return ratings.reduce((a, b) => a + b, 0) / ratings.length;
 }
@@ -163,12 +178,25 @@ function csvEscape(val) {
   return s;
 }
 function buildCsv(visits) {
-  const headers = ["Date", "Customer", "Contact", "Account Manager", "Site / Location", "Follow-up Required",
-    ...QUESTIONS.flatMap((q) => [`${q.topic} - Rating`, `${q.topic} - Notes`, `${q.topic} - Priority`]),
-    "Top Action Agreed", "Owner", "Due Date", "Customer Quote", "Internal Next Step", "Status", "Overall Notes"];
-  const rows = visits.map((v) => [v.date, v.customer, v.contact, v.accountManager, v.site, v.followUpRequired,
-    ...QUESTIONS.flatMap((q) => { const a = v.answers?.[q.id] || {}; return [a.rating || "", a.notes || "", a.priority || ""]; }),
-    v.topAction, v.owner, v.dueDate, v.quote, v.internalNextStep, v.status, v.overallNotes]);
+  const headers = ["Date", "Customer", "Contact", "Account Manager", "Site / Location", "Follow-up Required"];
+  QUESTIONS.forEach((q) => {
+    if (q.type === "rating") headers.push(`${q.topic} - Rating`, `${q.topic} - Notes`, `${q.topic} - Priority`);
+    else if (q.type === "nps") headers.push(`${q.topic} - Score`, `${q.topic} - Notes`);
+    else headers.push(`${q.topic} - Category`, `${q.topic} - Notes`);
+  });
+  headers.push("Top Action Agreed", "Owner", "Due Date", "Customer Quote", "Internal Next Step", "Status", "Overall Notes");
+
+  const rows = visits.map((v) => {
+    const row = [v.date, v.customer, v.contact, v.accountManager, v.site, v.followUpRequired];
+    QUESTIONS.forEach((q) => {
+      const a = v.answers?.[q.id] || {};
+      if (q.type === "rating") row.push(a.rating || "", a.notes || "", a.priority || "");
+      else if (q.type === "nps") row.push(a.score != null ? a.score : "", a.notes || "");
+      else row.push(a.category || "", a.notes || "");
+    });
+    row.push(v.topAction, v.owner, v.dueDate, v.quote, v.internalNextStep, v.status, v.overallNotes);
+    return row;
+  });
   return [headers, ...rows].map((r) => r.map(csvEscape).join(",")).join("\n");
 }
 function downloadCsv(visits) {
@@ -197,13 +225,42 @@ function SetupNotice() {
   return (
     <div className="hw-setup">
       <div className="hw-brand" style={{ marginBottom: 16 }}>
-        <div className="hw-brand-bar" style={{ background: "#E40520" }}></div>
-        <div>
-          <div className="hw-brand-name" style={{ color: "#17171A" }}>Holroyd</div>
-          <div className="hw-brand-sub">Customer visit feedback</div>
-        </div>
+        <div className="hw-brand-bar"></div>
+        <div><div className="hw-brand-name" style={{ color: "#17171A" }}>Holroyd</div><div className="hw-brand-sub">Customer visit feedback</div></div>
       </div>
       <p style={{ fontSize: 14, lineHeight: 1.6 }}>This page needs a database connection before it can save anything. Open <code>index.html</code>, find <code>SUPABASE_URL</code> and <code>SUPABASE_ANON_KEY</code> near the top of the script, and paste in your Supabase project's values (Project Settings → API).</p>
+    </div>
+  );
+}
+
+function Gate({ onUnlock }) {
+  const [value, setValue] = useState("");
+  const [error, setError] = useState(false);
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    if (value === APP_PASSCODE) {
+      localStorage.setItem("hw_unlocked", "true");
+      onUnlock();
+    } else {
+      setError(true);
+    }
+  }
+
+  return (
+    <div className="hw-setup">
+      <div className="hw-brand" style={{ marginBottom: 16 }}>
+        <div className="hw-brand-bar"></div>
+        <div><div className="hw-brand-name" style={{ color: "#17171A" }}>Holroyd</div><div className="hw-brand-sub">Customer visit feedback</div></div>
+      </div>
+      <form onSubmit={handleSubmit}>
+        <div className="hw-field">
+          <label>Enter passcode to continue</label>
+          <input type="password" autoFocus value={value} onChange={(e) => { setValue(e.target.value); setError(false); }} placeholder="Passcode" />
+        </div>
+        {error && <div style={{ fontSize: 12.5, color: "#991B1B", marginBottom: 10, fontWeight: 600 }}>That's not right — try again.</div>}
+        <button className="hw-save-btn" type="submit" style={{ position: "static" }}>Continue</button>
+      </form>
     </div>
   );
 }
@@ -241,9 +298,8 @@ function App() {
       setForm(emptyForm());
       setSaveMsg("Visit saved");
       setTimeout(() => setSaveMsg(""), 3000);
-    } catch (e) {
-      setSaveMsg("Couldn't save — check connection and try again");
-    } finally { setSaving(false); }
+    } catch (e) { setSaveMsg("Couldn't save — check connection and try again"); }
+    finally { setSaving(false); }
   }
 
   async function handleDelete(id) {
@@ -256,13 +312,52 @@ function App() {
     const overallAvgs = visits.map(avgRating).filter((a) => a > 0);
     const overall = overallAvgs.length ? overallAvgs.reduce((a, b) => a + b, 0) / overallAvgs.length : 0;
     const followUps = visits.filter((v) => v.followUpRequired === "Yes").length;
-    const perQuestion = QUESTIONS.map((q) => {
+    const perQuestion = RATING_QUESTIONS.map((q) => {
       const ratings = visits.map((v) => v.answers?.[q.id]?.rating || 0).filter((r) => r > 0);
       const avg = ratings.length ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0;
       return { ...q, avg };
     });
-    return { overall, followUps, perQuestion, total: visits.length };
+
+    const npsScores = visits.map((v) => v.answers?.[6]?.score).filter((s) => s != null);
+    let npsScore = null, npsAvg = null;
+    if (npsScores.length) {
+      npsAvg = npsScores.reduce((a, b) => a + b, 0) / npsScores.length;
+      const promoters = npsScores.filter((s) => s >= 9).length;
+      const detractors = npsScores.filter((s) => s <= 6).length;
+      npsScore = Math.round(((promoters - detractors) / npsScores.length) * 100);
+    }
+
+    function themeCounts(qid) {
+      const counts = {};
+      visits.forEach((v) => {
+        const cat = v.answers?.[qid]?.category;
+        if (cat) counts[cat] = (counts[cat] || 0) + 1;
+      });
+      return Object.entries(counts).sort((a, b) => b[1] - a[1]);
+    }
+
+    return {
+      overall, followUps, perQuestion, total: visits.length, npsScore, npsAvg,
+      fixThemes: themeCounts(7), positiveThemes: themeCounts(8), futureThemes: themeCounts(9),
+    };
   }, [visits]);
+
+  function renderThemeBlock(title, entries) {
+    if (!entries.length) return null;
+    const max = entries[0][1];
+    return (
+      <div className="hw-theme-block">
+        <div className="hw-section-title">{title}</div>
+        {entries.map(([label, count]) => (
+          <div className="hw-bar-row" key={label}>
+            <div className="hw-bar-label">{label}</div>
+            <div className="hw-bar-track"><div className="hw-bar-fill" style={{ width: `${(count / max) * 100}%`, background: "#17171A" }}></div></div>
+            <div className="hw-bar-val">{count}</div>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -270,10 +365,7 @@ function App() {
         <div className="hw-header-top">
           <div className="hw-brand">
             <div className="hw-brand-bar"></div>
-            <div>
-              <div className="hw-brand-name">Holroyd</div>
-              <div className="hw-brand-sub">Customer visit feedback</div>
-            </div>
+            <div><div className="hw-brand-name">Holroyd</div><div className="hw-brand-sub">Customer visit feedback</div></div>
           </div>
         </div>
         <div className="hw-tabs">
@@ -310,22 +402,54 @@ function App() {
                   <div className="hw-qtitle"><span className="hw-qnum">{i + 1}</span>{q.topic}</div>
                   <div className="hw-qtext">{q.question}</div>
                   <div className="hw-qprobe">{q.probe}</div>
-                  <div className="hw-rating-row">
-                    {[1, 2, 3, 4, 5].map((r) => (
-                      <button key={r} className="hw-rating-btn"
-                        style={a.rating === r ? { background: RATING_META[r].color, borderColor: RATING_META[r].color, color: "#fff" } : {}}
-                        onClick={() => updateAnswer(q.id, "rating", a.rating === r ? 0 : r)}>{r}</button>
-                    ))}
-                  </div>
-                  {a.rating > 0 && <div className="hw-rating-label" style={{ color: RATING_META[a.rating].color }}>{RATING_META[a.rating].label}</div>}
-                  <div className="hw-notes-wrap"><textarea rows="2" placeholder="Customer response / evidence" value={a.notes} onChange={(e) => updateAnswer(q.id, "notes", e.target.value)}></textarea></div>
-                  <div className="hw-priority-row">
-                    {["Low", "Medium", "High"].map((p) => (
-                      <button key={p} className="hw-priority-btn"
-                        style={a.priority === p ? { background: PRIORITY_META[p].bg, borderColor: PRIORITY_META[p].color, color: PRIORITY_META[p].color } : {}}
-                        onClick={() => updateAnswer(q.id, "priority", a.priority === p ? "" : p)}>{p}</button>
-                    ))}
-                  </div>
+
+                  {q.type === "rating" && (
+                    <React.Fragment>
+                      <div className="hw-rating-row">
+                        {[1, 2, 3, 4, 5].map((r) => (
+                          <button key={r} className="hw-rating-btn"
+                            style={a.rating === r ? { background: RATING_META[r].color, borderColor: RATING_META[r].color, color: "#fff" } : {}}
+                            onClick={() => updateAnswer(q.id, "rating", a.rating === r ? 0 : r)}>{r}</button>
+                        ))}
+                      </div>
+                      {a.rating > 0 && <div className="hw-rating-label" style={{ color: RATING_META[a.rating].color }}>{RATING_META[a.rating].label}</div>}
+                      <div className="hw-notes-wrap"><textarea rows="2" placeholder="Customer response / evidence" value={a.notes} onChange={(e) => updateAnswer(q.id, "notes", e.target.value)}></textarea></div>
+                      <div className="hw-priority-row">
+                        {["Low", "Medium", "High"].map((p) => (
+                          <button key={p} className="hw-priority-btn"
+                            style={a.priority === p ? { background: PRIORITY_META[p].bg, borderColor: PRIORITY_META[p].color, color: PRIORITY_META[p].color } : {}}
+                            onClick={() => updateAnswer(q.id, "priority", a.priority === p ? "" : p)}>{p}</button>
+                        ))}
+                      </div>
+                    </React.Fragment>
+                  )}
+
+                  {q.type === "nps" && (
+                    <React.Fragment>
+                      <div className="hw-nps-row">
+                        {Array.from({ length: 11 }, (_, n) => n).map((n) => (
+                          <button key={n} className="hw-nps-btn"
+                            style={a.score === n ? { background: npsColor(n), borderColor: npsColor(n), color: "#fff" } : {}}
+                            onClick={() => updateAnswer(q.id, "score", a.score === n ? null : n)}>{n}</button>
+                        ))}
+                      </div>
+                      <div className="hw-nps-scale-labels"><span>Not likely</span><span>Extremely likely</span></div>
+                      <div className="hw-notes-wrap"><textarea rows="2" placeholder="Why that score? (optional)" value={a.notes} onChange={(e) => updateAnswer(q.id, "notes", e.target.value)}></textarea></div>
+                    </React.Fragment>
+                  )}
+
+                  {q.type === "tagged" && (
+                    <React.Fragment>
+                      <div className="hw-priority-row" style={{ marginBottom: 10 }}>
+                        {q.categories.map((c) => (
+                          <button key={c} className="hw-priority-btn"
+                            style={a.category === c ? { background: "#17171A", borderColor: "#17171A", color: "#fff" } : {}}
+                            onClick={() => updateAnswer(q.id, "category", a.category === c ? "" : c)}>{c}</button>
+                        ))}
+                      </div>
+                      <div className="hw-notes-wrap"><textarea rows="2" placeholder="Details" value={a.notes} onChange={(e) => updateAnswer(q.id, "notes", e.target.value)}></textarea></div>
+                    </React.Fragment>
+                  )}
                 </div>
               );
             })}
@@ -364,10 +488,12 @@ function App() {
             {!loadingVisits && !loadError && visits.length > 0 && stats && (
               <React.Fragment>
                 <div className="hw-stat-grid">
-                  <div className="hw-stat-card"><div className="hw-stat-num">{stats.total}</div><div className="hw-stat-label">Visits logged</div></div>
-                  <div className="hw-stat-card"><div className="hw-stat-num" style={{ color: heatColorForAvg(stats.overall) }}>{stats.overall ? stats.overall.toFixed(1) : "–"}</div><div className="hw-stat-label">Avg rating</div></div>
+                  <div className="hw-stat-card"><div className="hw-stat-num">{stats.total}</div><div className="hw-stat-label">Visits</div></div>
+                  <div className="hw-stat-card"><div className="hw-stat-num" style={{ color: heatColorForAvg(stats.overall) }}>{stats.overall ? stats.overall.toFixed(1) : "–"}</div><div className="hw-stat-label">Avg satisfaction</div></div>
+                  <div className="hw-stat-card"><div className="hw-stat-num" style={{ color: stats.npsScore == null ? "#17171A" : (stats.npsScore >= 0 ? "#166534" : "#991B1B") }}>{stats.npsScore != null ? stats.npsScore : "–"}</div><div className="hw-stat-label">NPS score</div></div>
                   <div className="hw-stat-card"><div className="hw-stat-num" style={{ color: stats.followUps ? "#E40520" : "#17171A" }}>{stats.followUps}</div><div className="hw-stat-label">Need follow-up</div></div>
                 </div>
+
                 <div className="hw-card">
                   <div className="hw-section-title">Average rating by question</div>
                   {stats.perQuestion.map((q) => (
@@ -378,6 +504,15 @@ function App() {
                     </div>
                   ))}
                 </div>
+
+                {(stats.fixThemes.length > 0 || stats.positiveThemes.length > 0 || stats.futureThemes.length > 0) && (
+                  <div className="hw-card">
+                    {renderThemeBlock("What customers want fixed", stats.fixThemes)}
+                    {renderThemeBlock("What customers value most", stats.positiveThemes)}
+                    {renderThemeBlock("Future opportunities raised", stats.futureThemes)}
+                  </div>
+                )}
+
                 <div className="hw-toolbar"><h2>All visits</h2><button className="hw-export-btn" onClick={() => downloadCsv(visits)}>Export CSV</button></div>
                 {visits.map((v) => {
                   const avg = avgRating(v);
@@ -435,10 +570,12 @@ function App() {
                   <div className="hw-detail-q" key={q.id}>
                     <div className="hw-detail-qtop">
                       <div className="hw-detail-qtitle">{i + 1}. {q.topic}</div>
-                      {a.rating > 0 && <div className="hw-rating-chip" style={{ background: RATING_META[a.rating].color }}>{a.rating} · {RATING_META[a.rating].label}</div>}
+                      {q.type === "rating" && a.rating > 0 && <div className="hw-rating-chip" style={{ background: RATING_META[a.rating].color }}>{a.rating} · {RATING_META[a.rating].label}</div>}
+                      {q.type === "nps" && a.score != null && <div className="hw-rating-chip" style={{ background: npsColor(a.score) }}>{a.score} / 10</div>}
+                      {q.type === "tagged" && a.category && <div className="hw-rating-chip" style={{ background: "#17171A" }}>{a.category}</div>}
                     </div>
                     {a.notes && <div className="hw-detail-notes">{a.notes}</div>}
-                    {a.priority && <div style={{ marginTop: 6 }}><span className="hw-priority-btn" style={{ background: PRIORITY_META[a.priority].bg, borderColor: PRIORITY_META[a.priority].color, color: PRIORITY_META[a.priority].color, cursor: "default" }}>{a.priority} priority</span></div>}
+                    {q.type === "rating" && a.priority && <div style={{ marginTop: 6 }}><span className="hw-priority-btn" style={{ background: PRIORITY_META[a.priority].bg, borderColor: PRIORITY_META[a.priority].color, color: PRIORITY_META[a.priority].color, cursor: "default" }}>{a.priority} priority</span></div>}
                   </div>
                 );
               })}
@@ -468,7 +605,14 @@ function App() {
   );
 }
 
-ReactDOM.createRoot(document.getElementById("root")).render(isConfigured ? <App /> : <SetupNotice />);
+function Root() {
+  const [unlocked, setUnlocked] = useState(localStorage.getItem("hw_unlocked") === "true");
+  if (!isConfigured) return <SetupNotice />;
+  if (!unlocked) return <Gate onUnlock={() => setUnlocked(true)} />;
+  return <App />;
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<Root />);
 </script>
 </body>
 </html>
