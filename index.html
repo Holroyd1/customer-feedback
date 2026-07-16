@@ -30,8 +30,8 @@
   .hw-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .hw-field { margin-bottom: 10px; }
   .hw-field label { display: block; font-size: 12px; font-weight: 600; color: #4B4B4E; margin-bottom: 4px; }
-  .hw-field input, .hw-field textarea, .hw-field select { width: 100%; padding: 10px 11px; border: 1.5px solid #E2E0DA; border-radius: 8px; font-size: 14.5px; font-family: 'Inter', sans-serif; background: #FCFBFA; color: #17171A; }
-  .hw-field textarea { min-height: 140px; resize: vertical; line-height: 1.45; }
+  .hw-field input, .hw-field textarea, .hw-field select { width: 100%; box-sizing: border-box; padding: 10px 11px; border: 1.5px solid #E2E0DA; border-radius: 8px; font-size: 14.5px; font-family: 'Inter', sans-serif; background: #FCFBFA; color: #17171A; }
+  .hw-field textarea { min-height: 90px; resize: vertical; line-height: 1.45; }
   .hw-field input:focus, .hw-field textarea:focus { outline: none; border-color: #E40520; background: #fff; }
   .hw-toggle-row { display: flex; gap: 8px; }
   .hw-toggle-btn { flex: 1; padding: 9px; border-radius: 8px; border: 1.5px solid #E2E0DA; background: #FCFBFA; font-size: 13.5px; font-weight: 600; color: #6B6B6E; cursor: pointer; font-family: 'Inter', sans-serif; }
@@ -417,7 +417,7 @@ function App() {
                         ))}
                       </div>
                       {a.rating > 0 && <div className="hw-rating-label" style={{ color: RATING_META[a.rating].color }}>{RATING_META[a.rating].label}</div>}
-                      <div className="hw-notes-wrap"><textarea rows="6" placeholder="Customer response / evidence" value={a.notes} onChange={(e) => updateAnswer(q.id, "notes", e.target.value)}></textarea></div>
+                      <div className="hw-notes-wrap"><textarea rows="4" placeholder="Customer response / evidence" value={a.notes} onChange={(e) => updateAnswer(q.id, "notes", e.target.value)}></textarea></div>
                       <div className="hw-priority-row">
                         {["Low", "Medium", "High"].map((p) => (
                           <button key={p} className="hw-priority-btn"
@@ -438,7 +438,7 @@ function App() {
                         ))}
                       </div>
                       <div className="hw-nps-scale-labels"><span>Not likely</span><span>Extremely likely</span></div>
-                      <div className="hw-notes-wrap"><textarea rows="6" placeholder="Why that score? (optional)" value={a.notes} onChange={(e) => updateAnswer(q.id, "notes", e.target.value)}></textarea></div>
+                      <div className="hw-notes-wrap"><textarea rows="4" placeholder="Why that score? (optional)" value={a.notes} onChange={(e) => updateAnswer(q.id, "notes", e.target.value)}></textarea></div>
                     </React.Fragment>
                   )}
 
@@ -451,7 +451,7 @@ function App() {
                             onClick={() => updateAnswer(q.id, "category", a.category === c ? "" : c)}>{c}</button>
                         ))}
                       </div>
-                      <div className="hw-notes-wrap"><textarea rows="6" placeholder="Details" value={a.notes} onChange={(e) => updateAnswer(q.id, "notes", e.target.value)}></textarea></div>
+                      <div className="hw-notes-wrap"><textarea rows="4" placeholder="Details" value={a.notes} onChange={(e) => updateAnswer(q.id, "notes", e.target.value)}></textarea></div>
                     </React.Fragment>
                   )}
                 </div>
@@ -465,7 +465,7 @@ function App() {
                 <div className="hw-field"><label>Owner</label><input value={form.owner} onChange={(e) => setForm({ ...form, owner: e.target.value })} /></div>
                 <div className="hw-field"><label>Due date</label><input type="date" value={form.dueDate} onChange={(e) => setForm({ ...form, dueDate: e.target.value })} /></div>
               </div>
-              <div className="hw-field"><label>Customer quote / verbatim comment</label><textarea rows="6" value={form.quote} onChange={(e) => setForm({ ...form, quote: e.target.value })}></textarea></div>
+              <div className="hw-field"><label>Customer quote / verbatim comment</label><textarea rows="4" value={form.quote} onChange={(e) => setForm({ ...form, quote: e.target.value })}></textarea></div>
               <div className="hw-field"><label>Internal next step</label><input value={form.internalNextStep} onChange={(e) => setForm({ ...form, internalNextStep: e.target.value })} /></div>
               <div className="hw-field">
                 <label>Status</label>
