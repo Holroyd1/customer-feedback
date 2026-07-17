@@ -220,6 +220,10 @@ async function saveVisitToDb(record) {
   const { error } = await db.from("visits").insert({ payload: record });
   if (error) throw error;
 }
+async function updateVisitInDb(id, record) {
+  const { error } = await db.from("visits").update({ payload: record }).eq("id", id);
+  if (error) throw error;
+}
 async function deleteVisitFromDb(id) {
   const { error } = await db.from("visits").delete().eq("id", id);
   if (error) throw error;
@@ -279,6 +283,7 @@ function App() {
   const [saveMsg, setSaveMsg] = useState("");
   const [detailVisit, setDetailVisit] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const [editingId, setEditingId] = useState(null);
 
   useEffect(() => { refreshVisits(); }, []);
 
@@ -297,17 +302,42 @@ function App() {
     if (!canSave || saving) return;
     setSaving(true); setSaveMsg("");
     try {
-      await saveVisitToDb(form);
+      if (editingId) {
+        await updateVisitInDb(editingId, form);
+      } else {
+        await saveVisitToDb(form);
+      }
       await refreshVisits();
       setForm(emptyForm());
-      setSaveMsg("Visit saved");
+      setSaveMsg(editingId ? "Visit updated" : "Visit saved");
+      setEditingId(null);
       setTimeout(() => setSaveMsg(""), 3000);
     } catch (e) { setSaveMsg("Couldn't save — check connection and try again"); }
     finally { setSaving(false); }
   }
 
+  function startEdit(visit) {
+    const { id, createdAt, ...rest } = visit;
+    setForm(rest);
+    setEditingId(id);
+    setDetailVisit(null);
+    setTab("new");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function cancelEdit() {
+    setForm(emptyForm());
+    setEditingId(null);
+  }
+
   async function handleDelete(id) {
-    try { await deleteVisitFromDb(id); await refreshVisits(); setConfirmDelete(null); setDetailVisit(null); }
+    try {
+      await deleteVisitFromDb(id);
+      await refreshVisits();
+      setConfirmDelete(null);
+      setDetailVisit(null);
+      if (editingId === id) cancelEdit();
+    }
     catch (e) { setConfirmDelete(null); }
   }
 
@@ -381,6 +411,12 @@ function App() {
       <div className="hw-body">
         {tab === "new" && (
           <React.Fragment>
+            {editingId && (
+              <div className="hw-card" style={{ background: "#FEF3C7", border: "1px solid #F59E0B", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px" }}>
+                <span style={{ fontSize: 13, fontWeight: 600, color: "#92400E" }}>Editing existing visit for {form.customer || "this customer"}</span>
+                <button onClick={cancelEdit} style={{ background: "transparent", border: "none", color: "#92400E", fontWeight: 700, fontSize: 12.5, cursor: "pointer", textDecoration: "underline" }}>Cancel</button>
+              </div>
+            )}
             <div className="hw-card">
               <div className="hw-section-title">Visit details</div>
               <div className="hw-grid2">
@@ -544,7 +580,7 @@ function App() {
       {tab === "new" && (
         <div className="hw-sticky-save">
           <div style={{ maxWidth: 640, width: "100%" }}>
-            <button className="hw-save-btn" disabled={!canSave || saving} onClick={handleSave}>{saving ? "Saving…" : "Save visit"}</button>
+            <button className="hw-save-btn" disabled={!canSave || saving} onClick={handleSave}>{saving ? "Saving…" : (editingId ? "Update visit" : "Save visit")}</button>
             {saveMsg && <div className="hw-save-msg" style={{ color: saveMsg.includes("Couldn't") ? "#991B1B" : "#166534" }}>{saveMsg}</div>}
             {!canSave && !saveMsg && <div style={{ fontSize: 11.5, color: "#9CA3AF", textAlign: "center", marginTop: 6 }}>Add a customer name and date to save</div>}
           </div>
@@ -599,7 +635,10 @@ function App() {
                   <button style={{ background: "#F1F0EC", color: "#4B4B4E" }} onClick={() => setConfirmDelete(null)}>Cancel</button>
                 </div>
               ) : (
-                <button className="hw-delete-btn" onClick={() => setConfirmDelete(detailVisit.id)}>Delete this visit</button>
+                <div className="hw-confirm-row">
+                  <button style={{ background: "#17171A", color: "#fff" }} onClick={() => startEdit(detailVisit)}>Edit this visit</button>
+                  <button style={{ background: "#FEE2E2", color: "#991B1B" }} onClick={() => setConfirmDelete(detailVisit.id)}>Delete</button>
+                </div>
               )}
             </div>
           </div>
