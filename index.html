@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
-<title>Holroyd — Customer Visit Feedback</title>
+<title>Holroyd — Customer Feedback</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -230,7 +230,7 @@ function SetupNotice() {
     <div className="hw-setup">
       <div className="hw-brand" style={{ marginBottom: 16 }}>
         <img src={HOLROYD_LOGO} alt="Holroyd" className="hw-logo" style={{ height: 34 }} />
-        <div className="hw-brand-sub" style={{ marginTop: 6 }}>Customer visit feedback</div>
+        <div className="hw-brand-sub" style={{ marginTop: 6 }}>Customer feedback</div>
       </div>
       <p style={{ fontSize: 14, lineHeight: 1.6 }}>This page needs a database connection before it can save anything. Open <code>index.html</code>, find <code>SUPABASE_URL</code> and <code>SUPABASE_ANON_KEY</code> near the top of the script, and paste in your Supabase project's values (Project Settings → API).</p>
     </div>
@@ -255,7 +255,7 @@ function Gate({ onUnlock }) {
     <div className="hw-setup">
       <div className="hw-brand" style={{ marginBottom: 16 }}>
         <img src={HOLROYD_LOGO} alt="Holroyd" className="hw-logo" style={{ height: 34 }} />
-        <div className="hw-brand-sub" style={{ marginTop: 6 }}>Customer visit feedback</div>
+        <div className="hw-brand-sub" style={{ marginTop: 6 }}>Customer feedback</div>
       </div>
       <form onSubmit={handleSubmit}>
         <div className="hw-field">
@@ -369,7 +369,7 @@ function App() {
         <div className="hw-header-top">
           <div className="hw-brand">
             <img src={HOLROYD_LOGO} alt="Holroyd" className="hw-logo" />
-            <div className="hw-brand-sub" style={{ marginTop: 6 }}>Customer visit feedback</div>
+            <div className="hw-brand-sub" style={{ marginTop: 6 }}>Customer feedback</div>
           </div>
         </div>
         <div className="hw-tabs">
