@@ -14,6 +14,6 @@ jobs:
         run: |
           curl --fail --silent --show-error \
             "https://fibiyvxvxsktxsjyzdmh.supabase.co/rest/v1/" \
-            -H "apikey: YOUR_ANON_KEY" \
-            -H "Authorization: Bearer YOUR_ANON_KEY"
+            -H "apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZpYml5dnh2eHNrdHhzanl6ZG1oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxMTgwNTEsImV4cCI6MjA5OTY5NDA1MX0.d1ol7FlU54RiS3xaKKOcDsi2EVN5mMUASMJYql8voBY" \
+            -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZpYml5dnh2eHNrdHhzanl6ZG1oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxMTgwNTEsImV4cCI6MjA5OTY5NDA1MX0.d1ol7FlU54RiS3xaKKOcDsi2EVN5mMUASMJYql8voBY"
           echo "Ping successful - Supabase project activity registered."
