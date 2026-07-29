@@ -1,0 +1,19 @@
+name: Keep Supabase Alive
+
+on:
+  schedule:
+    # Runs every Monday and Thursday at 9:00 AM UTC
+    - cron: '0 9 * * 1,4'
+  workflow_dispatch: # allows manual trigger from the Actions tab
+
+jobs:
+  ping-supabase:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase REST endpoint
+        run: |
+          curl --fail --silent --show-error \
+            "https://fibiyvxvxsktxsjyzdmh.supabase.co/rest/v1/" \
+            -H "apikey: YOUR_ANON_KEY" \
+            -H "Authorization: Bearer YOUR_ANON_KEY"
+          echo "Ping successful - Supabase project activity registered."
