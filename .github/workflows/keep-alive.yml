@@ -10,7 +10,7 @@ jobs:
   ping-supabase:
     runs-on: ubuntu-latest
     steps:
-- name: Ping Supabase REST endpoint
+      - name: Ping Supabase REST endpoint
         run: |
           curl --fail --show-error -v \
             "https://fibiyvxvxsktxsjyzdmh.supabase.co/rest/v1/" \
