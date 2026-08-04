@@ -2,18 +2,23 @@ name: Keep Supabase Alive
 
 on:
   schedule:
-    # Runs every Monday and Thursday at 9:00 AM UTC
-    - cron: '0 9 * * 1,4'
-  workflow_dispatch: # allows manual trigger from the Actions tab
+    - cron: '0 9 * * 1,4'  # Monday and Thursday at 9am UTC
+  workflow_dispatch:
 
 jobs:
-  ping-supabase:
+  ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping Supabase visits table
+      - name: Insert keepalive row
         run: |
-          curl --fail --silent --show-error \
-            "https://fibiyvxvxsktxsjyzdmh.supabase.co/rest/v1/visits?select=id&limit=1" \
-            -H "apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZpYml5dnh2eHNrdHhzanl6ZG1oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxMTgwNTEsImV4cCI6MjA5OTY5NDA1MX0.d1ol7FlU54RiS3xaKKOcDsi2EVN5mMUASMJYql8voBY" \
-            -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZpYml5dnh2eHNrdHhzanl6ZG1oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxMTgwNTEsImV4cCI6MjA5OTY5NDA1MX0.d1ol7FlU54RiS3xaKKOcDsi2EVN5mMUASMJYql8voBY"
-          echo "Ping successful - Supabase project activity registered."
+          curl -X POST 'https://fibiyvxvxsktxsjyzdmh.supabase.co/rest/v1/keepalive' \
+            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{}'
+
+      - name: Clean up old keepalive rows
+        run: |
+          curl -X DELETE 'https://fibiyvxvxsktxsjyzdmh.supabase.co/rest/v1/keepalive?pinged_at=lt.now()' \
+            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}"
